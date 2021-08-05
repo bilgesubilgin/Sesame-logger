@@ -54,13 +54,13 @@ class fileStructure():
     def create_repo(self):
         print("Attempting to create repo")
         # using personal access token
-        personal_access_token = keyring.get_password('github_auth', "uname")
-        if not personal_access_token:
-            personal_access_token = click.prompt('Please enter a Github "Personal Access Token"')
-            keyring.set_password('github_auth', "uname", personal_access_token)
+    #    personal_access_token = keyring.get_password('github_auth', "uname")
+    #    if not personal_access_token:
+        personal_access_token = click.prompt('Please enter a Github "Personal Access Token"')
+    #        keyring.set_password('github_auth', "uname", personal_access_token)
 
         g = Github(personal_access_token)
-        org = g.get_organization('physical-computation')
+        org = g.get_organization('physical-computation-measurements')
 
         print("Found organisation")
 
@@ -69,16 +69,23 @@ class fileStructure():
             """This repo is a store of the data from the print.  This repo was created by the Python tool for logging prints"""
         )
 
-        repo = org.create_repo(self.repo_name, description=projectDescription)
+        repo = org.create_repo(self.repo_name, description=projectDescription,private=True)
+        print("Repo created")
 
         readme = os.path.join(self.root_folder_name, "README.md")
         open(readme, 'wb').close()
+        print("readme created")
 
         self.repo = git.Repo.init(self.root_folder_name)
         self.repo.index.add(["README.md"])
+        print("Readme added")
+
         self.repo.index.commit("Initial Commit")
+        print("Comitted")
+
         origin = self.repo.create_remote('origin', repo.clone_url)
         self.repo.git.push("--set-upstream", "origin", "master")
+        print("Pushed")
 
 
 
@@ -113,7 +120,7 @@ def log_all_info():
 @click.pass_context
 def cli(ctx, directory_index, create_repo, logging_level, root_dir):
     ctx.ensure_object(dict)
-    root_folder_name = "sesame-" + str(directory_index).zfill(16)
+    root_folder_name = "sesame-" + str(directory_index)
     root_folder_dir = os.path.join(
         root_dir,
         root_folder_name
